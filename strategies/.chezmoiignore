@@ -1,0 +1,17 @@
+# Ignore the source submodule directory
+# We only want the *content* via our templates, not the raw folder in ~
+vendor/**
+
+# Ignore our build system and logic
+generate_wrappers.py
+strategies/**
+__pycache__/**
+
+# Ignore git metadata
+.git/**
+.gitmodules
+.gitignore
+
+# Ignore documentation or license files in the root
+README.md
+LICENSE
