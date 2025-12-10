@@ -14,7 +14,8 @@ REPO_ROOT = Path.cwd().resolve() # The root of your wrapper repo
 # Extensions that should use the TextStrategy (Include & Override)
 TEXT_EXTENSIONS = {
     '.conf', '.sh', '.css', '.rasi', '.yuck', 
-    '.xml', '.ini', '.toml', '.txt', '.md'
+    '.xml', '.ini', '.toml', '.txt', '.md',
+    '.fish', '.yaml', '.yml', '.vim'
 }
 
 # Future: Structured files we want to merge intelligently
