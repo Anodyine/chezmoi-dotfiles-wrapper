@@ -7,53 +7,43 @@ from strategies.text import TextStrategy
 from strategies.symlink import SymlinkStrategy
 
 # CONFIGURATION
-SOURCE_ROOT = Path("vendor/ml4w/dotfiles").resolve()
-DEST_ROOT = Path("dot_config").resolve()
-REPO_ROOT = Path.cwd().resolve() # The root of your wrapper repo
+# We resolve paths to ensure calculations are correct
+REPO_ROOT = Path.cwd().resolve()
+SOURCE_ROOT = (REPO_ROOT / "vendor/ml4w/dotfiles").resolve()
 
-# Extensions that should use the TextStrategy (Include & Override)
+TEXT_FILENAMES = {
+    '.bashrc', '.zshrc', '.zshenv', '.profile', '.bash_profile',
+    '.Xresources', '.gtkrc-2.0',
+    '00-init', '10-aliases', '20-customization', '30-autostart', # bashrc partials
+    'config', # ssh config often named just 'config'
+}
+
 TEXT_EXTENSIONS = {
     '.conf', '.sh', '.css', '.rasi', '.yuck', 
     '.xml', '.ini', '.toml', '.txt', '.md',
-    '.fish', '.yaml', '.yml', '.vim'
+    '.json', '.jsonc', '.fish', '.yaml', '.yml', '.vim'
 }
-
-# Future: Structured files we want to merge intelligently
-# For MVP, we treat them as text or simple symlinks until the parser is ready.
-# We'll treat them as text for now so they are editable.
-TEXT_EXTENSIONS.update({'.json', '.jsonc'})
 
 def generate_wrappers():
     print(f"🚀 Starting Generator...")
-    print(f"   Source: {SOURCE_ROOT}")
-    print(f"   Dest:   {DEST_ROOT}")
+    print(f"   Repo Root: {REPO_ROOT}")
+    print(f"   Source:    {SOURCE_ROOT}")
 
-    # Instantiate strategies once
     text_strategy = TextStrategy()
     symlink_strategy = SymlinkStrategy()
 
+    # Iterate through the submodule
     for root, dirs, files in os.walk(SOURCE_ROOT):
-        # Replicate directory structure
-        rel_path = Path(root).relative_to(SOURCE_ROOT)
-        target_dir = DEST_ROOT / rel_path
-        target_dir.mkdir(parents=True, exist_ok=True)
-
         for filename in files:
             source_file = Path(root) / filename
             suffix = source_file.suffix
 
-            # DISPATCH LOGIC
-            match suffix:
-                case s if s in TEXT_EXTENSIONS:
-                    text_strategy.process(source_file, target_dir, SOURCE_ROOT)
-                
-                # FUTURE: Add JSON Strategy here
-                # case '.json' | '.jsonc':
-                #    json_strategy.process(source_file, target_dir, SOURCE_ROOT)
-                
-                case _:
-                    # Default fallthrough for binaries, images, etc.
-                    symlink_strategy.process(source_file, target_dir, SOURCE_ROOT)
+            # 2. UPDATE THE CHECK LOGIC
+            # Check extension OR exact filename match
+            if suffix in TEXT_EXTENSIONS or filename in TEXT_FILENAMES:
+                text_strategy.process(source_file, REPO_ROOT)
+            else:
+                symlink_strategy.process(source_file, REPO_ROOT)
 
     print(f"✅ Generation Complete.")
 
